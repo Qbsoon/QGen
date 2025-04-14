@@ -69,7 +69,7 @@ def create_captions (source_directory, captions_creating_batch_size = 8):
     except Exception as e:
         print(f"Error saving captions: {e}")
 
-def encode_captions(source_directory):
+def encode_captions(source_directory, text_encoding_batch_size = 16, max_text_seq_len = 256, t5_model_name = 't5-large'):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     with open(os.path.join(source_directory, 'captions.json'), 'r') as f:
         captions_data = json.load(f)
@@ -82,15 +82,12 @@ def encode_captions(source_directory):
 
     captions = [image['caption'] for image in captions_data if image['image_path'] in image_files]
 
-    t5_model_name = 't5-large'
     print(f"Loading T5 Tokenizer and Encoder Model ({t5_model_name})...")
     t5_tokenizer = T5Tokenizer.from_pretrained(t5_model_name)
     t5_model = T5EncoderModel.from_pretrained(t5_model_name).cuda() # Move model to GPU
     t5_model.eval() # Set T5 model to evaluation mode
     print("T5 models loaded.")
 
-    text_encoding_batch_size = 16
-    max_text_seq_len = 256 
     all_text_embeds = []
 
     with torch.no_grad(): # No need to track gradients for encoding
