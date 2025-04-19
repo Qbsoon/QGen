@@ -6,6 +6,7 @@ import os
 from transformers import BlipProcessor, BlipForConditionalGeneration
 import json
 from transformers import T5Tokenizer, T5EncoderModel
+import gc
 
 def create_captions (source_directory, captions_creating_batch_size = 8):
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -111,6 +112,12 @@ def encode_captions(source_directory, text_encoding_batch_size = 16, max_text_se
 
     # Concatenate all embedding batches
     text_embeddings_tensor = torch.cat(all_text_embeds, dim=0)
+
+    del t5_model
+    del t5_tokenizer
+    gc.collect()
+    if device == "cuda":
+        torch.cuda.empty_cache()
     return text_embeddings_tensor
 
 # Handles None returns from failed image loads
