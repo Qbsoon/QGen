@@ -17,9 +17,10 @@ def create_captions (source_directory, captions_creating_batch_size = 8):
     # --- List Image Files ---
     # Ensure consistent order by sorting
     image_files = sorted([
-        os.path.join(source_directory, f)
-        for f in os.listdir(source_directory)
-        if f.lower().endswith(('.png', '.jpg', '.jpeg'))
+    	os.path.join(root, f)
+    	for root, _, files in os.walk(source_directory)
+    	for f in files
+    	if f.lower().endswith(('.png', '.jpg', '.jpeg'))
     ])
     print(f"Found {len(image_files)} images in {source_directory}")
 
@@ -76,9 +77,10 @@ def encode_captions(source_directory, text_encoding_batch_size = 16, max_text_se
         captions_data = json.load(f)
 
     image_files = sorted([
-        os.path.join(source_directory, f)
-        for f in os.listdir(source_directory)
-        if f.lower().endswith(('.png', '.jpg', '.jpeg'))
+    	os.path.join(root, f)
+    	for root, _, files in os.walk(source_directory)
+    	for f in files
+    	if f.lower().endswith(('.png', '.jpg', '.jpeg'))
     ])
 
     captions = [image['caption'] for image in captions_data if image['image_path'] in image_files]
@@ -129,7 +131,12 @@ def collate_fn(batch):
 class ImageDataset(Dataset):
     def __init__(self, root_dir, text_embeds, transform=None):
         self.root_dir = root_dir
-        self.files = [os.path.join(root_dir, file) for file in os.listdir(root_dir) if file.lower().endswith(('.png', '.jpg', '.jpeg'))]
+        self.files = [
+        	os.path.join(root, f)
+        	for root, _, files in os.walk(source_directory)
+        	for f in files
+        	if f.lower().endswith(('.png', '.jpg', '.jpeg'))
+        ]
         self.text_embeds = text_embeds
         self.transform = transform
 
